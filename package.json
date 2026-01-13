@@ -1,0 +1,23 @@
+{
+  "name": "back_clinique_val_lumineux",
+  "version": "1.0.0",
+  "description": "Backend Clinique Val Lumineux (Projet d'étude)",
+  "homepage": "https://github.com/Outoine15/back_clinique_val_lumineux#readme",
+  "bugs": {
+    "url": "https://github.com/Outoine15/back_clinique_val_lumineux/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Outoine15/back_clinique_val_lumineux.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3"
+  }
+}
