@@ -14,11 +14,13 @@ npm install
 Après cela, il faut créer un fichier `.env` qui doit contenir les informations suivantes :
 - `SERVER_IP` : IP sur lequel le serveur Web tournera
 - `SERVER_PORT` : Port sur lequel le serveur Web écoutera
+- `SITE_FOLDER` : Dossier dans lequel se trouvera le site web
 
 Exemple de `.env`:
 ```env
 SERVER_IP=127.0.0.1
 SERVER_PORT=8080
+SITE_FOLDER=./site
 ```
 
 Après cela, le serveur est installé.

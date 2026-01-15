@@ -1,23 +1,107 @@
 require("dotenv").config();
 
 const http = require('http');
+const fs = require('fs');
+
 const env = process.env;
 
-const hostname = env.SERVER_IP;
-const port = env.SERVER_PORT;
+const HOSTNAME = env.SERVER_IP;
+const PORT = env.SERVER_PORT;
+const SITE_FOLDER = env.SITE_FOLDER;
+
+function getAssociatedResponseSite(askedRessource) {
+	var res = {
+		statusCode: 200,
+		contentType: "text/html",
+		content: undefined
+	};
+
+	var splitted_path = askedRessource.split(".");
+	var extension = splitted_path[splitted_path.length-1];
+
+	var fileToRead = SITE_FOLDER + askedRessource;
+	var encoding = "utf-8";
+	
+	switch (extension) {
+		case "js":
+			res.contentType = "text/javascript";
+			break;
+		case "css":
+			res.contentType = "text/css";
+			break;
+		case "png":
+		case "gif":
+			res.contentType = "image/" + extension;
+			encoding = null;
+			break;
+		case "jpg":
+		case "jpeg":
+			res.contentType = "image/jpeg";
+			encoding = null;
+			break;
+		case "ico":
+			res.contentType = "image/x-icon";
+			encoding = null;
+			break;
+		case "html": // on lui donne exactement la page demandé
+			break;
+		default:
+			fileToRead = SITE_FOLDER + "/index.html";
+			break;
+	}
+
+	if(askedRessource == "/404") {
+		res.statusCode = 404;
+
+		if(fs.existsSync(fileToRead)) { // si le site n'est pas mis en ligne, il ne peut pas y avoir de 404 personnalisé
+			res.content = fs.readFileSync(fileToRead, encoding);
+		}
+
+	} else if(fs.existsSync(fileToRead)) { // si la ressource existe, on la donne
+
+		if(encoding != null) { // encoding null <=> lecture binaire
+			res.content = fs.readFileSync(fileToRead, encoding);
+		} else {
+			res.content = fs.readFileSync(fileToRead);
+		}
+
+	} else { // on redirige vers 404 car la ressource n'existe pas
+		res.statusCode = 302; // code de redirection
+		res.location = "/404"; // page de redirection
+	}
+
+	return res;
+}
 
 const server = http.createServer((req, res) => {
-	res.statusCode = 200;
-	res.setHeader('Content-Type', 'text/html');
+	const askedRessource = req.url;
 
-	res.write("<html><body>")
+	var askedContent;
+	if(askedRessource.toLowerCase().startsWith("/api")) {
+		// TODO
+		askedContent = { statusCode: 302, location: '/404'};
+	} else {
+		askedContent = getAssociatedResponseSite(askedRessource);
+	}
 
-	res.write("<h1>Welcome</h1>");
-	res.write("<p>Hello World !</p>")
+	res.statusCode = askedContent.statusCode;
 
-	res.end("</body></html>");
+	switch(askedContent.statusCode) {
+		case 302: // code de redirection
+			res.setHeader('Location', askedContent.location);
+			break;
+		default:
+			res.setHeader('Content-Type', askedContent.contentType);
+			break;
+	}
+
+	if(askedContent.content != undefined) { // s'il y a quelque chose à écrire, on l'écrit
+		res.end(askedContent.content);
+	} else { // sinon, on ferme simplement la communication
+		res.end();
+	}
 });
 
-server.listen(port, hostname, () => {
-	console.log(`Serveur démarré sur http://${hostname}:${port}`);
+server.listen(PORT, HOSTNAME, () => {
+	console.log(`Serveur démarré sur http://${HOSTNAME}:${PORT}`);
 });
