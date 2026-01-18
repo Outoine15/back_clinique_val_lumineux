@@ -7,7 +7,7 @@ const env = process.env;
 const SITE_FOLDER = env.SITE_FOLDER;
 
 const minimalGitRequestHeaders = [
-    "HTTP_USER_AGENT", "HTTP_X_GITHUB_HOOK_ID", "HTTP_X_GITHUB_EVENT", "HTTP_X_GITHUB_DELIVERY", "HTTP_X_GITHUB_HOOK_INSTALLATION_TARGET_TYPE",
+    "x-github-delivery", "x-github-event", "x-github-hook-id", "x-github-hook-installation-target-id", "x-github-hook-installation-target-type"
 ];
 
 async function handleRequest(req) { // headers: dictionnaire ; contentString: string
@@ -30,17 +30,16 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
     } catch (error) {}
 
     if(allHeaders &&
-        headers["HTTP_USER_AGENT"].startsWith("GitHub-Hookshot/") &&
-        headers["HTTP_X_GITHUB_HOOK_INSTALLATION_TARGET_TYPE"] == "repository" &&
-        headers["HTTP_X_GITHUB_EVENT"] == "release" &&
+        headers["x-github-hook-installation-target-type"] == "repository" &&
+        headers["x-github-event"] == "release" &&
         contentJSON != undefined
     ) { // mise à jour Front
         var validSender = true;
 
         if(env.GITHUB_FRONT_SECRET != undefined) {
             validSender = timingSafeEqual( // vérification via HMAC-SHA256 de l'authenticité du WebHook
-                headers["X-HUB-SIGNATURE-256"].replace("sha256=", ""),
-                createHmac('sha256', env.GITHUB_FRONT_SECRET).update(contentString).digest("hex")
+                Buffer.from( ("" + headers["x-hub-signature-256"]).replace("sha256=", "") ),
+                Buffer.from( createHmac('sha256', env.GITHUB_FRONT_SECRET).update(contentString).digest("hex") )
             );
         }
 
