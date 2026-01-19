@@ -33,7 +33,7 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
         headers["x-github-hook-installation-target-type"] == "repository" &&
         headers["x-github-event"] == "release" &&
         contentJSON != undefined
-    ) { // mise à jour Front
+    ) {
         if(contentJSON["action"] == "released") {
             var secret;
             var validSender = true;
@@ -49,10 +49,10 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
                     break;
                 case env.BACK_REPO:
                     secret = env.GITHUB_BACK_SECRET;
-                    downloadURL = contentJSON["release"]["zipball_url"];
+                    downloadURL = contentJSON["release"]["zipball_url"]; // la back est disponnible directement dans la zipball
                     destination = "./"
                     break;
-                default:
+                default: // aucun repo de configuré
                     validSender = false;
                     break;
             }
