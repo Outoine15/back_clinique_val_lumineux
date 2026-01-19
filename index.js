@@ -61,6 +61,9 @@ function getAssociatedResponseSite(askedRessource) {
 
 		if(encoding != null) { // encoding null <=> lecture binaire
 			res.content = fs.readFileSync(fileToRead, encoding);
+			if(fileToRead.endsWith(".html")) {
+				res.content += '<script>window.__BASE_PATH__=window.location.pathname.replace("' + askedRessource + '", "");</script>';
+			}
 		} else {
 			res.content = fs.readFileSync(fileToRead);
 		}
