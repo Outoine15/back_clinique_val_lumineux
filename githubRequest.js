@@ -55,7 +55,9 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
             }).catch((error) => console.log(error));
         }
     } else {
-        res = { statusCode: 302, location: '/404' };
+        if(headers["x-github-event"] != "ping") {
+            res = { statusCode: 302, location: '/404' };
+        }
     }
     return res;
 }
