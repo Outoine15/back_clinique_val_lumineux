@@ -3,6 +3,8 @@ require("dotenv").config();
 const http = require('http');
 const fs = require('fs');
 
+const githubRequest = require('./githubRequest');
+
 const env = process.env;
 
 const HOSTNAME = env.SERVER_IP;
@@ -76,13 +78,15 @@ function getAssociatedResponseSite(askedRessource) {
 	return res;
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
 	const askedRessource = req.url;
 
 	var askedContent;
 	if(askedRessource.toLowerCase().startsWith("/api")) {
 		// TODO
 		askedContent = { statusCode: 302, location: '/404'};
+	} else if(askedRessource.toLowerCase().startsWith("/github")) {
+		askedContent = await githubRequest.handleRequest(req);
 	} else {
 		askedContent = getAssociatedResponseSite(askedRessource);
 	}
