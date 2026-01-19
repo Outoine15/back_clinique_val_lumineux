@@ -43,7 +43,7 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
             );
         }
 
-        if(validSender) {
+        if(validSender && contentJSON["action"] == "released") {
             const downloadURL = contentJSON["release"]["assets"][0]["browser_download_url"];
             const ZIP = SITE_FOLDER + ".zip";
             await downloadFile(downloadURL, ZIP);
