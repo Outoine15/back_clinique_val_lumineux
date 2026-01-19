@@ -34,25 +34,46 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
         headers["x-github-event"] == "release" &&
         contentJSON != undefined
     ) { // mise à jour Front
-        var validSender = true;
+        if(contentJSON["action"] == "released") {
+            var secret;
+            var validSender = true;
 
-        if(env.GITHUB_FRONT_SECRET != undefined) {
-            validSender = timingSafeEqual( // vérification via HMAC-SHA256 de l'authenticité du WebHook
-                Buffer.from( ("" + headers["x-hub-signature-256"]).replace("sha256=", "") ),
-                Buffer.from( createHmac('sha256', env.GITHUB_FRONT_SECRET).update(contentString).digest("hex") )
-            );
-        }
-
-        if(validSender && contentJSON["action"] == "released") {
-            const downloadURL = contentJSON["release"]["assets"][0]["browser_download_url"];
-            const ZIP = SITE_FOLDER + ".zip";
-            await downloadFile(downloadURL, ZIP);
-            if(fs.existsSync(SITE_FOLDER)) {
-                fs.rmSync(SITE_FOLDER, {recursive: true, force: true});
+            var downloadURL;
+            var destination;
+    
+            switch(content["repository"]["full_name"]) {
+                case env.FRONT_REPO:
+                    secret = env.GITHUB_FRONT_SECRET;
+                    downloadURL = contentJSON["release"]["assets"][0]["browser_download_url"];
+                    destination = SITE_FOLDER;
+                    break;
+                case env.BACK_REPO:
+                    secret = env.GITHUB_BACK_SECRET;
+                    downloadURL = contentJSON["release"]["zipball_url"];
+                    destination = "./"
+                    break;
+                default:
+                    validSender = false;
+                    break;
             }
-            decompress(ZIP, SITE_FOLDER).then(() => {
-                fs.rmSync(ZIP);
-            }).catch((error) => console.log(error));
+    
+            if(validSender && secret != undefined) {
+                validSender = timingSafeEqual( // vérification via HMAC-SHA256 de l'authenticité du WebHook
+                    Buffer.from( ("" + headers["x-hub-signature-256"]).replace("sha256=", "") ),
+                    Buffer.from( createHmac('sha256', env.GITHUB_FRONT_SECRET).update(contentString).digest("hex") )
+                );
+            }
+    
+            if(validSender) {
+                const ZIP = "download.zip";
+                await downloadFile(downloadURL, ZIP);
+                /*if(fs.existsSync(destination)) {
+                    fs.rmSync(destination, {recursive: true, force: true});
+                }*/
+                decompress(ZIP, destination).then(() => {
+                    fs.rmSync(ZIP);
+                }).catch((error) => console.log(error));
+            }
         }
     } else {
         if(headers["x-github-event"] != "ping") {
