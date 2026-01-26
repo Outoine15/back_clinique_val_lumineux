@@ -12,7 +12,7 @@ const PORT = env.SERVER_PORT;
 const SITE_FOLDER = env.SITE_FOLDER;
 
 function getAssociatedResponseSite(askedRessource) {
-	var res = {
+	var res = { // par défaut tout fonctionne
 		statusCode: 200,
 		contentType: "text/html",
 		content: undefined
@@ -31,7 +31,7 @@ function getAssociatedResponseSite(askedRessource) {
 		case "css":
 			res.contentType = "text/css";
 			break;
-		case "png":
+		case "png": // pour les images, il faut les renvoyer sans encodage et avec un content type spécial
 		case "gif":
 			res.contentType = "image/" + extension;
 			encoding = null;
@@ -52,7 +52,7 @@ function getAssociatedResponseSite(askedRessource) {
 			break;
 	}
 
-	if(askedRessource == "/404") {
+	if(askedRessource == "/404") { // on demande explicitement la page 404
 		res.statusCode = 404;
 
 		if(fs.existsSync(fileToRead)) { // si le site n'est pas mis en ligne, il ne peut pas y avoir de 404 personnalisé
@@ -84,7 +84,7 @@ const server = http.createServer(async (req, res) => {
 	var askedContent;
 	if(askedRessource.toLowerCase().startsWith("/api")) {
 		// TODO
-		askedContent = { statusCode: 302, location: '/404'};
+		askedContent = { statusCode: 302, location: '/404'}; // pour le moment on ne trouve rien
 	} else if(askedRessource.toLowerCase().startsWith("/github")) {
 		askedContent = await githubRequest.handleRequest(req);
 	} else {
