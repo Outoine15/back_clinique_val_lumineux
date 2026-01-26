@@ -49,7 +49,7 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
                     break;
                 case env.BACK_REPO:
                     secret = env.GITHUB_BACK_SECRET;
-                    downloadURL = contentJSON["release"]["zipball_url"]; // la back est disponnible directement dans la zipball
+                    downloadURL = contentJSON["release"]["assets"][0]["browser_download_url"]; // la back est disponnible directement dans la zipball
                     destination = "./"
                     break;
                 default: // aucun repo de configuré
