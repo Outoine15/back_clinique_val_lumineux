@@ -19,9 +19,8 @@ jobs:
       - name: Generate release date
         run: echo "RELEASE_DATE=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
-      - name: Zip
-        run: |
-          zip -r ./back.zip .
+      - name: Zip back
+        run: zip -r ./back.zip .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
