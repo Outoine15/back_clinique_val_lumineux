@@ -41,7 +41,7 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
             var downloadURL;
             var destination;
     
-            switch(content["repository"]["full_name"]) {
+            switch(contentJSON["repository"]["full_name"]) {
                 case env.FRONT_REPO:
                     secret = env.GITHUB_FRONT_SECRET;
                     downloadURL = contentJSON["release"]["assets"][0]["browser_download_url"];
