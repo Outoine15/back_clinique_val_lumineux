@@ -27,7 +27,7 @@ async function handleRequest(req) { // headers: dictionnaire ; contentString: st
     try {
         contentString = await getData(req);
         contentJSON = JSON.parse(contentString);
-    } catch (error) {}
+    } catch (error) { console.log("GitHub WebHook: Failled get content"); }
 
     if(allHeaders &&
         headers["x-github-hook-installation-target-type"] == "repository" &&
@@ -88,7 +88,7 @@ async function downloadFile(from, to) {
         await fetch(from).then(async (r) => {
             fs.writeFileSync(to, Buffer.from(await r.arrayBuffer()));
         });
-    }catch(error) { }
+    }catch(error) { console.log("Error while downloading file"); }
 }
 
 async function getData(req) {
