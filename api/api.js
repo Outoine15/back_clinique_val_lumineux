@@ -12,7 +12,7 @@ const db = mysql.createConnection({
 
 const query = util.promisify(db.query).bind(db);
 
-async function handleRequest(route) {
+async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
 
     connectionFailed = false;

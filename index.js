@@ -84,7 +84,7 @@ const server = http.createServer(async (req, res) => {
 
 	var askedContent;
 	if(askedRessource.toLowerCase().startsWith("/api")) {
-		askedContent = await api.handleRequest(askedRessource.slice(4));
+		askedContent = await api.handleRequest(req);
 	} else if(askedRessource.toLowerCase().startsWith("/github")) {
 		askedContent = await githubRequest.handleRequest(req);
 	} else {
