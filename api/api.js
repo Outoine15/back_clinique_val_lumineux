@@ -12,20 +12,40 @@ const db = mysql.createConnection({
 
 const query = util.promisify(db.query).bind(db);
 
+const doctors = require('./doctors');
+
 async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
 
+    method = req.method; // POST, GET, PUT, DELETE
+    splittedRoute = req.url.slice(5).split("/"); // on enlève le "/api/" du début avant de séparer la chaîne par les "/"
+    
+    i = 0;
+    while(i < splittedRoute.length) { // on enlève toutes les chaînes vides
+        if(splittedRoute[i] == "") {
+            splittedRoute.splice(i, 1);
+        } else {
+            i++;
+        }
+    }
+
     connectionFailed = false;
-    await util.promisify(db.connect).bind(db)()
-        .catch(() => connectionFailed = true);
+    //console.log(db)
+    //console.log("-----");
+    if(db.state == "disconnected") {
+        await util.promisify(db.connect).bind(db)()
+            .catch((err) => {
+                connectionFailed = true;
+                console.log(err);
+            });
+    }
 
     if(!connectionFailed) {
-        l = await query("SELECT * FROM sector");
-        res = {
-            statusCode: 200,
-            contentType: "text/html",
-            content: "<p>" + l + "</p>"
-        };
+        switch(splittedRoute[0].toLowerCase()) {
+            case "doctors":
+                res = await doctors.handle(method, splittedRoute.slice(1), query);
+                break;
+        }
     }
     return res;
 }

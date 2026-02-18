@@ -20,7 +20,7 @@ function getAssociatedResponseSite(askedRessource) {
 	};
 
 	var splitted_path = askedRessource.split(".");
-	var extension = splitted_path[splitted_path.length-1];
+	var extension = splitted_path[splitted_path.length-1].toLowerCase();
 
 	var fileToRead = SITE_FOLDER + askedRessource;
 	var encoding = "utf-8";
