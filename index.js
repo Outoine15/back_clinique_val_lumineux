@@ -4,6 +4,7 @@ const http = require('http');
 const fs = require('fs');
 
 const githubRequest = require('./githubRequest');
+const api = require('./api/api');
 
 const env = process.env;
 
@@ -83,13 +84,14 @@ const server = http.createServer(async (req, res) => {
 
 	var askedContent;
 	if(askedRessource.toLowerCase().startsWith("/api")) {
-		// TODO
-		askedContent = { statusCode: 302, location: '/404'}; // pour le moment on ne trouve rien
+		askedContent = await api.handleRequest(askedRessource.slice(4));
 	} else if(askedRessource.toLowerCase().startsWith("/github")) {
 		askedContent = await githubRequest.handleRequest(req);
 	} else {
 		askedContent = getAssociatedResponseSite(askedRessource);
 	}
+
+	if(askedContent ==  undefined) askedContent = { statusCode: 302, location: '/500'};
 
 	res.statusCode = askedContent.statusCode;
 
