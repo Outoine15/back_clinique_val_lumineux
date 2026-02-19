@@ -13,6 +13,7 @@ const db = mysql.createConnection({
 const query = util.promisify(db.query).bind(db);
 
 const doctors = require('./doctors');
+const users = require('./users');
 
 async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
@@ -40,6 +41,9 @@ async function handleRequest(req) {
         switch(splittedRoute[0].toLowerCase()) {
             case "doctors":
                 res = await doctors.handle(method, splittedRoute.slice(1), query);
+                break;
+            case "users":
+                res = await users.handle(method, splittedRoute.slice(1), query);
                 break;
         }
     }
