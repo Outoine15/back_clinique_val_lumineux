@@ -3,11 +3,14 @@ const util = require('util');
 
 const env = process.env;
 
-const db = mysql.createConnection({
+var db = mysql.createPool({
     host: env.DB_URL,
     user: env.DB_USER,
     password: env.DB_PASSWORD,
-    database: env.DB_NAME 
+    database: env.DB_NAME,
+    connectionLimit: 10,
+    waitForConnections: true,
+    queueLimit: 0
 });
 
 const query = util.promisify(db.query).bind(db);
@@ -31,11 +34,15 @@ async function handleRequest(req) {
     }
 
     connectionFailed = false;
-    if(db.state == "disconnected") {
-        await util.promisify(db.connect).bind(db)()
-            .then(() => db.on('error', (err) => {}))
-            .catch(() => connectionFailed = true);
-    }
+
+    await util.promisify(db.getConnection).bind(db)()
+        .then(async conn => {
+            conn.ping(undefined, err => {
+                connectionFailed = true;
+            });
+            conn.release();
+        })
+        .catch(() => connectionFailed = true);
 
     if(!connectionFailed) {
         switch(splittedRoute[0].toLowerCase()) {
