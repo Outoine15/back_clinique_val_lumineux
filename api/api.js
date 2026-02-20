@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const util = require('util');
+const querystring = require('querystring');
 
 const env = process.env;
 
@@ -21,7 +22,7 @@ const users = require('./users');
 async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
 
-    data = await getData(req); // récupère les potentielles datas
+    data = querystring.decode(await getData(req)); // récupère les potentielles datas
 
     method = req.method; // POST, GET, PUT, DELETE
     splittedRoute = req.url.slice(5).split("/"); // on enlève le "/api/" du début avant de séparer la chaîne par les "/"
