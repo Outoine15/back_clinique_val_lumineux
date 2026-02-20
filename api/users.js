@@ -1,4 +1,4 @@
-async function handle(method, splittedRoute, query) {
+async function handle(method, splittedRoute, data, query) {
     
 }
 

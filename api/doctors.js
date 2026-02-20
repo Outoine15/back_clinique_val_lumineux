@@ -1,8 +1,8 @@
-async function handle(method, splittedRoute, query) {
+async function handle(method, splittedRoute, data, query) {
     res;
     switch(method) {
         case "GET":
-            res = await handleGet(splittedRoute, query);
+            res = await handleGet(splittedRoute, data, query);
             break;
         case "POST":
             break;
@@ -17,7 +17,7 @@ async function handle(method, splittedRoute, query) {
     return res;
 }
 
-async function handleGet(splittedRoute, query) {
+async function handleGet(splittedRoute, data, query) {
     res = { statusCode: 302, location: '/404' };
     if(splittedRoute.length == 1) { // "/api/doctors/{doctor_id}"
         res = {

@@ -21,6 +21,8 @@ const users = require('./users');
 async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
 
+    data = await getData(req); // récupère les potentielles datas
+
     method = req.method; // POST, GET, PUT, DELETE
     splittedRoute = req.url.slice(5).split("/"); // on enlève le "/api/" du début avant de séparer la chaîne par les "/"
     
@@ -47,14 +49,25 @@ async function handleRequest(req) {
     if(!connectionFailed) {
         switch(splittedRoute[0].toLowerCase()) {
             case "doctors":
-                res = await doctors.handle(method, splittedRoute.slice(1), query);
+                res = await doctors.handle(method, splittedRoute.slice(1), data, query);
                 break;
             case "users":
-                res = await users.handle(method, splittedRoute.slice(1), query);
+                res = await users.handle(method, splittedRoute.slice(1), data, query);
                 break;
         }
     }
     return res;
+}
+
+async function getData(req) {
+    data = '';
+
+    req.on('data', chunk => { // récupère les données et les stocke dans une variable
+        data += chunk;
+    });
+
+    await util.promisify(req.on).bind(req)('end'); // permet d'attendre que les données aient bien toutes été récupérées
+    return data;
 }
 
 module.exports = {
