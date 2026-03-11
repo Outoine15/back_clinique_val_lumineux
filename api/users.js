@@ -141,7 +141,7 @@ async function connectToken(headers, query) {
     return res;
 }
 
-async function handlePost(splittedRoute, headers, data, query) {
+async function handlePut(splittedRoute, headers, data, query) {
     res = { statusCode: 302, location: '/404' };
     if(splittedRoute.length == 0) {
         res = await createUser(headers, data, query);
