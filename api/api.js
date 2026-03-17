@@ -23,7 +23,7 @@ async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
 
     data = querystring.decode(await getData(req)); // récupère les potentielles datas
-    queryParameters  = {};
+    queryParameters  = querystring.decode(req.url.split("?")[1]||"");
 
     method = req.method; // POST, GET, PUT, DELETE
     splittedRoute = req.url.slice(5).split("/"); // on enlève le "/api/" du début avant de séparer la chaîne par les "/"
