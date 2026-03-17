@@ -20,10 +20,7 @@ if(fs.existsSync(`.redirect`)) {
 }
 
 function removeEndSlashes(uri) {
-    while(uri.endsWith("/")) {
-        uri = uri.slice(0,-1);
-    }
-    return uri;
+    return uri.replace(/\/*$/, "");
 }
 
 function getRedirection(path) {
@@ -79,6 +76,6 @@ function getRedirection(path) {
     return redirect||path; // path si redirect == undefined
 }
 
-/*module.exports = {
-    redirections: redirections
-}*/
+module.exports = {
+    getRedirection: getRedirection
+}
