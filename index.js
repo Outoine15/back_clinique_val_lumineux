@@ -76,7 +76,12 @@ function getAssociatedResponseSite(askedRessource) {
 
 	} else { // on redirige vers 404 car la ressource n'existe pas
 		res.statusCode = 302; // code de redirection
-		res.location = "/404"; // page de redirection
+		var rootDistance = askedRessource.replace(/\/*$/, "").replace(/\/{2,}/, "/").replace(/^\/*/, "").split("/").length;
+		var redirectionPrefix = "./";
+		for(var i = 0 ; i < rootDistance - 1 ; i++) { // rootDistance-1 car on a toujours au moins toujours 1 élément qui est à la racine
+			redirectionPrefix += "../";
+		}
+		res.location = redirectionPrefix + "404"; // page de redirection
 	}
 
 	return res;
