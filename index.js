@@ -57,9 +57,10 @@ function getAssociatedResponseSite(askedRessource) {
 
 	if(askedRessource == "/404") { // on demande explicitement la page 404
 		res.statusCode = 404;
+		var file404 = SITE_FOLDER + "/404.html";
 
-		if(fs.existsSync(fileToRead)) { // si le site n'est pas mis en ligne, il ne peut pas y avoir de 404 personnalisé
-			res.content = fs.readFileSync(fileToRead, encoding);
+		if(fs.existsSync(file404)) { // si le site n'est pas mis en ligne, il ne peut pas y avoir de 404 personnalisé
+			res.content = fs.readFileSync(file404, encoding);
 		}
 
 	} else if(fs.existsSync(fileToRead)) { // si la ressource existe, on la donne
