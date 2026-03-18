@@ -144,7 +144,11 @@ async function connectToken(headers, query) {
 async function handlePut(splittedRoute, headers, data, query) {
     res = { statusCode: 302, location: '/404' };
     if(splittedRoute.length == 0) {
-        res = await createUser(headers, data, query);
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await createUser(headers, data, query))
+        };
     }
     return res;
 }
@@ -164,10 +168,10 @@ async function createUserDB(mail, password, firstname, name, birthdate, query) {
         await query(
             `INSERT INTO client(name, firstname, birthdate) \
             VALUE ('${name}', '${firstname}', '${birthdate}')
-            `).then(async result => {
-            clientID = result["insertId"]; // id du client associé
+        `).then(async r => {
+            clientID = r["insertId"]; // id du client associé
             // on lie les deux
-            await query(`INSERT INTO user_client VALUES (${userID}, ${clientID})`);
+            await query(`INSERT INTO user_client VALUES (${clientID}, ${userID})`);
         });
     });
 
@@ -175,9 +179,9 @@ async function createUserDB(mail, password, firstname, name, birthdate, query) {
 }
 
 async function createUser(headers, data, query) {
-    res = { "success": false };
+    var res = { "success": false };
     if(data["mail"] && data["password"] && data["firstname"] && data["name"] && data["birthdate"]) {
-        isAdmin;
+        var isAdmin;
         
         if(headers["autorization"]) { // personne déjà connectée
             token = headers["autorization"].replace("Bearer ", "");
@@ -189,9 +193,9 @@ async function createUser(headers, data, query) {
                 `).then(result => { isAdmin = result.length == 1; });
         }
             
-        userID;
+        var userID;
         if(isAdmin == undefined || isAdmin) { // soit pas connecté, soit connecté en tant qu'admin
-            userID = createUserDB(data["mail"], data["password"], data["firstname"], data["name"], data["birthdate"], query);
+            userID = await createUserDB(data["mail"], data["password"], data["firstname"], data["name"], data["birthdate"], query);
         }
 
         if(userID) { // la création a fonctionné
@@ -205,7 +209,7 @@ async function createUser(headers, data, query) {
             };
 
             if(!isAdmin) {
-                token = randomBytes(64).toString("base64url");
+                var token = randomBytes(64).toString("base64url");
                 await query(
                     `INSERT INTO user_token VALUES (${userID}, '${token}')`
                 ).then(() => {
