@@ -89,6 +89,14 @@ async function handleGet(splittedRoute, headers, data, query) {
             contentType: "application/json",
             content: JSON.stringify(await connectToken(headers, query))
         };
+    } else if(splittedRoute.length == 1) {
+        if(splittedRoute[0] == "appointments") {
+            res = {
+                statusCode: 200,
+                contentType: "application/json",
+                content: JSON.stringify(await getAppointments(headers, query))
+            };
+        }
     }
     return res;
 }
@@ -137,6 +145,57 @@ async function connectToken(headers, query) {
                 };
             }
         });
+    }
+    return res;
+}
+
+async function getAppointments(headers, query) {
+    var res = [];
+    if(headers["authorization"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+        await query(`
+            SELECT C.id as client_id, C.name as client_name, C.firstname as client_firstname, \
+            A.id appointment_id, A.time_start, A.time_end, \
+            D.id as doctor_id, D.name as doctor_name, D.firstname as doctor_firstname, \
+            S.id as sector_id, S.name as sector_name, S.color \
+            FROM client C \
+            JOIN user_client UC \
+            ON C.id=UC.client_id \
+            JOIN user U \
+            ON UC.user_id=U.id \
+            JOIN user_token UT \
+            ON U.id=UT.user \
+            JOIN appointment A \
+            ON C.id=A.client_id \
+            JOIN doctor D \
+            ON A.doctor_id=D.id \
+            JOIN sector S \
+            ON D.sector_id=S.id \
+            WHERE UT.token="${token}"
+        `).then(results => {
+            results.forEach(appointment => {
+                res.push({
+                    "id": appointment["appointment_id"],
+                    "start": appointment["time_start"],
+                    "end": appointment["time_end"],
+                    "client": {
+                        "id": appointment["client_id"],
+                        "name": appointment["client_name"],
+                        "firstname": appointment["client_firstname"],
+                    },
+                    "doctor": {
+                        "id": appointment["doctor_id"],
+                        "name": appointment["doctor_name"],
+                        "firstname": appointment["doctor_firstname"],
+                    },
+                    "sector": {
+                        "id": appointment["sector_id"],
+                        "name": appointment["sector_name"],
+                        "color": appointment["color"]
+                    }
+                });
+            });
+        }).catch(() => res = "Error 1");
     }
     return res;
 }
