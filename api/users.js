@@ -38,8 +38,8 @@ async function connectMailPassword(data, query) {
     res = {"success": false};
 
     if(data["mail"] && data["password"]) {
-        await query(
-            `SELECT
+        var result = await query(`
+            SELECT
             U.id, U.mail, \
             C.name as client_name, \
             C.firstname as client_firstname, \
@@ -57,25 +57,25 @@ async function connectMailPassword(data, query) {
             ON (U.secretary_id IS NOT NULL AND U.secretary_id = S.id) \
             LEFT OUTER JOIN doctor D \
             ON (U.doctor_id IS NOT NULL AND U.doctor_id = D.id) \
-            WHERE U.mail='${data["mail"]}' AND U.password='${createHash('md5').update(data["password"]).digest("base64")}'`
-        ).then(async (result) => {
-            if(result.length == 1) { // le seul cas de succès
-                user = result[0];
-                token = randomBytes(64).toString("base64url");
-                res = {
-                    "id": user["id"],
-                    "mail": user["mail"],
-                    "name": user["client_name"] || user["admin_name"] || user["secretary_name"] || user["admin_name"],
-                    "firstname": user["client_firstname"] || user["admin_firstname"] || user["secretary_firstname"] || user["admin_firstname"],
-                    "admin": user["admin_firstname"] != null,
-                    "secretary": user["secretary_firstname"] != null,
-                    "doctor": user["doctor_firstname"] != null,
-                    "token": token
-                };
+            WHERE U.mail='${data["mail"]}' AND U.password='${createHash('md5').update(data["password"]).digest("base64")}'
+        `);
+        
+        if(result.length == 1) { // le seul cas de succès
+            user = result[0];
+            token = randomBytes(64).toString("base64url");
+            res = {
+                "id": user["id"],
+                "mail": user["mail"],
+                "name": user["client_name"] || user["admin_name"] || user["secretary_name"] || user["admin_name"],
+                "firstname": user["client_firstname"] || user["admin_firstname"] || user["secretary_firstname"] || user["admin_firstname"],
+                "admin": user["admin_firstname"] != null,
+                "secretary": user["secretary_firstname"] != null,
+                "doctor": user["doctor_firstname"] != null,
+                "token": token
+            };
 
-                await query(`INSERT INTO user_token VALUES (${user["id"]}, '${token}')`);
-            }
-        });
+            await query(`INSERT INTO user_token VALUES (${user["id"]}, '${token}')`);
+        };
     }
 
     return res;
@@ -147,7 +147,6 @@ async function connectToken(headers, query) {
             };
         }
     }
-    console.log(res);
     return res;
 }
 
@@ -155,7 +154,8 @@ async function getAppointments(headers, query) {
     var res = [];
     if(headers["authorization"]) {
         var token = headers["authorization"].replace("Bearer ", "");
-        await query(`
+
+        var results = await query(`
             SELECT C.id as client_id, C.name as client_name, C.firstname as client_firstname, \
             A.id appointment_id, A.time_start, A.time_end, \
             D.id as doctor_id, D.name as doctor_name, D.firstname as doctor_firstname, \
@@ -174,30 +174,30 @@ async function getAppointments(headers, query) {
             JOIN sector S \
             ON D.sector_id=S.id \
             WHERE UT.token="${token}"
-        `).then(results => {
-            results.forEach(appointment => {
-                res.push({
-                    "id": appointment["appointment_id"],
-                    "start": appointment["time_start"],
-                    "end": appointment["time_end"],
-                    "client": {
-                        "id": appointment["client_id"],
-                        "name": appointment["client_name"],
-                        "firstname": appointment["client_firstname"],
-                    },
-                    "doctor": {
-                        "id": appointment["doctor_id"],
-                        "name": appointment["doctor_name"],
-                        "firstname": appointment["doctor_firstname"],
-                    },
-                    "sector": {
-                        "id": appointment["sector_id"],
-                        "name": appointment["sector_name"],
-                        "color": appointment["color"]
-                    }
-                });
+        `);
+
+        results.forEach(appointment => {
+            res.push({
+                "id": appointment["appointment_id"],
+                "start": appointment["time_start"],
+                "end": appointment["time_end"],
+                "client": {
+                    "id": appointment["client_id"],
+                    "name": appointment["client_name"],
+                    "firstname": appointment["client_firstname"],
+                },
+                "doctor": {
+                    "id": appointment["doctor_id"],
+                    "name": appointment["doctor_name"],
+                    "firstname": appointment["doctor_firstname"],
+                },
+                "sector": {
+                    "id": appointment["sector_id"],
+                    "name": appointment["sector_name"],
+                    "color": appointment["color"]
+                }
             });
-        }).catch(() => res = "Error 1");
+        });
     }
     return res;
 }
@@ -215,27 +215,21 @@ async function handlePut(splittedRoute, headers, data, query) {
 }
 
 async function createUserDB(mail, password, firstname, name, birthdate, query) {
-    userID = undefined;
-
-    await query(
+    var userID = (await query(
         `INSERT INTO user(mail, password) \
         VALUES (\
         '${mail}', \
         '${createHash('md5').update(password).digest("base64")}' \
-        )`
-    ).then(async result => {
-        userID = result["insertId"]; // id de l'utilisateur créé
-        // on créé le client associé
-        await query(
-            `INSERT INTO client(name, firstname, birthdate) \
-            VALUE ('${name}', '${firstname}', '${birthdate}')
-        `).then(async r => {
-            clientID = r["insertId"]; // id du client associé
-            // on lie les deux
-            await query(`INSERT INTO user_client VALUES (${clientID}, ${userID})`);
-        });
-    });
+        )
+    `))["insertId"];
+        
+    var clientID = (await query(`
+        INSERT INTO client(name, firstname, birthdate) \
+        VALUE ('${name}', '${firstname}', '${birthdate}')
+    `))["insertId"];
 
+    await query(`INSERT INTO user_client VALUES (${clientID}, ${userID})`);
+    
     return userID;
 }
 
@@ -246,12 +240,12 @@ async function createUser(headers, data, query) {
         
         if(headers["autorization"]) { // personne déjà connectée
             token = headers["autorization"].replace("Bearer ", "");
-            await query(
+            isAdmin = (await query(
                 `SELECT name FROM user_token UT \
                 JOIN user U \
                 ON UT.user = U.id \
                 WHERE UT.token='${token}' AND U.admin_id IS NOT NULL
-                `).then(result => { isAdmin = result.length == 1; });
+            `)).length == 1;
         }
             
         var userID;
@@ -271,11 +265,8 @@ async function createUser(headers, data, query) {
 
             if(!isAdmin) {
                 var token = randomBytes(64).toString("base64url");
-                await query(
-                    `INSERT INTO user_token VALUES (${userID}, '${token}')`
-                ).then(() => {
-                    res["token"] = token;
-                });
+                await query(`INSERT INTO user_token VALUES (${userID}, '${token}')`);
+                res["token"] = token;
             }
         }
     }
