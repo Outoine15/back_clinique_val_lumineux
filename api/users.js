@@ -102,11 +102,11 @@ async function handleGet(splittedRoute, headers, data, query) {
 }
 
 async function connectToken(headers, query) {
-    res = {"success": false};
+    var res = {"success": false};
     if(headers["authorization"]) {
         token = headers["authorization"].replace("Bearer ", "");
-        await query(
-            `SELECT \
+        var result = await query(`
+            SELECT \
             U.id, \
             U.mail, \
             C.name AS client_name, \
@@ -130,22 +130,24 @@ async function connectToken(headers, query) {
             ON (U.secretary_id IS NOT NULL AND U.secretary_id = S.id) \
             LEFT OUTER JOIN doctor D \
             ON (U.doctor_id IS NOT NULL AND U.doctor_id = D.id) \
-            WHERE UT.token="${token}";`
-        ).then(result => {
-            if(result.length == 1) { // le seul cas de succès
-                user = result[0];
-                res = {
-                    "id": user["id"],
-                    "mail": user["mail"],
-                    "name": user["client_name"] || user["admin_name"] || user["secretary_name"] || user["admin_name"],
-                    "firstname": user["client_firstname"] || user["admin_firstname"] || user["secretary_firstname"] || user["admin_firstname"],
-                    "admin": user["admin_firstname"] != null,
-                    "secretary": user["secretary_firstname"] != null,
-                    "doctor": user["doctor_firstname"] != null
-                };
-            }
-        });
+            WHERE UT.token="${token}" \
+            ORDER BY U.id
+        `);
+
+        if(1 <= result.length) {
+            var user = result[0];
+            res = {
+                "id": user["id"],
+                "mail": user["mail"],
+                "name": user["client_name"] || user["admin_name"] || user["secretary_name"] || user["admin_name"],
+                "firstname": user["client_firstname"] || user["admin_firstname"] || user["secretary_firstname"] || user["admin_firstname"],
+                "admin": user["admin_firstname"] != null,
+                "secretary": user["secretary_firstname"] != null,
+                "doctor": user["doctor_firstname"] != null
+            };
+        }
     }
+    console.log(res);
     return res;
 }
 
