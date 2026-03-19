@@ -18,6 +18,13 @@ const query = util.promisify(db.query).bind(db);
 
 const doctors = require('./doctors');
 const users = require('./users');
+const appointments = require('./appointments');
+
+const requestHandlers = {
+    "doctors": doctors.handle,
+    "users": users.handle,
+    "appointments": appointments.handle
+}
 
 async function handleRequest(req) {
     res = { statusCode: 302, location: '/500'};
@@ -49,13 +56,9 @@ async function handleRequest(req) {
         .catch(() => connectionFailed = true);
 
     if(!connectionFailed) {
-        switch(splittedRoute[0].toLowerCase()) {
-            case "doctors":
-                res = await doctors.handle(method, splittedRoute.slice(1), req.headers, data, queryParameters, query);
-                break;
-            case "users":
-                res = await users.handle(method, splittedRoute.slice(1), req.headers, data, queryParameters, query);
-                break;
+        var firstRoute = splittedRoute[0].toLowerCase();
+        if(requestHandlers[firstRoute]) {
+            res = requestHandlers[firstRoute](method, splittedRoute.slice(1), req.headers, data, queryParameters, query);
         }
     }
     return res;

@@ -51,7 +51,7 @@ function getAssociatedResponseSite(askedRessource) {
 		case "html": // on lui donne exactement la page demandé
 			break;
 		default:
-			fileToRead = SITE_FOLDER + "/index.html";
+			fileToRead = `${SITE_FOLDER}/${askedRessource}.html`;
 			break;
 	}
 
