@@ -35,7 +35,7 @@ async function handlePost(splittedRoute, headers, data, query) {
 }
 
 async function connectMailPassword(data, query) {
-    res = {"success": false};
+    var res = {"success": false};
 
     if(data["mail"] && data["password"]) {
         var result = await query(`
@@ -60,9 +60,9 @@ async function connectMailPassword(data, query) {
             WHERE U.mail='${data["mail"]}' AND U.password='${createHash('md5').update(data["password"]).digest("base64")}'
         `);
         
-        if(result.length == 1) { // le seul cas de succès
-            user = result[0];
-            token = randomBytes(64).toString("base64url");
+        if(1 <= result.length) { // le seul cas de succès
+            var user = result[0];
+            var token = randomBytes(64).toString("base64url");
             res = {
                 "id": user["id"],
                 "mail": user["mail"],
