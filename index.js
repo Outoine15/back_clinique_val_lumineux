@@ -51,14 +51,13 @@ function getAssociatedResponseSite(askedRessource) {
 		case "html": // on lui donne exactement la page demandé
 			break;
 		default:
-			fileToRead = SITE_FOLDER + "/index.html";
+			fileToRead = `${SITE_FOLDER}/${askedRessource}.html`;
 			break;
 	}
 
 	if(askedRessource == "/404") { // on demande explicitement la page 404
 		res.statusCode = 404;
 		var file404 = SITE_FOLDER + "/404.html";
-
 		if(fs.existsSync(file404)) { // si le site n'est pas mis en ligne, il ne peut pas y avoir de 404 personnalisé
 			res.content = fs.readFileSync(file404, encoding);
 		}
