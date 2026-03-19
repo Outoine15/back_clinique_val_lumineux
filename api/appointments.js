@@ -15,6 +15,12 @@ async function handlePut(splittedRoute, headers, data, query) {
             contentType: 'application/json',
             content: JSON.stringify(await createAppointments(headers, data, query))
         };
+    } else if(splittedRoute.length == 2 && splittedRoute[1] == "subscribe") {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await subscribeAppointments(headers, data, splittedRoute[0], query))
+        }
     }
     return res;
 }
@@ -37,12 +43,12 @@ async function createAppointments(headers, data, query) { // création d'un rend
             WHERE UT.token="${token}"
         `).then(async (result) => {
             if(result.length == 1) {
-                result = result[0];
+                var dataSet = result[0];
                 await query(`
                     INSERT INTO appointment
                     (time_start, time_end, doctor_id)
                     VALUES 
-                    ('${data["time_start"]}', '${data["time_end"]}', ${result["doctor_id"]})
+                    ('${data["time_start"]}', '${data["time_end"]}', ${dataSet["doctor_id"]})
                 `).then(r => {
                     res = {
                         "id": r["insertId"],
@@ -50,20 +56,55 @@ async function createAppointments(headers, data, query) { // création d'un rend
                         "end": data["time_end"],
                         "reseved": false,
                         "doctor": {
-                            "id": result["doctor_id"],
-                            "name": result["doctor_name"],
-                            "firstname": result["doctor_firstname"]
+                            "id": dataSet["doctor_id"],
+                            "name": dataSet["doctor_name"],
+                            "firstname": dataSet["doctor_firstname"]
                         },
                         "sector": {
-                            "id": result["sector_id"],
-                            "name": result["sector_name"],
-                            "description": result["sector_description"],
-                            "color": result["sector_color"]
+                            "id": dataSet["sector_id"],
+                            "name": dataSet["sector_name"],
+                            "description": dataSet["sector_description"],
+                            "color": dataSet["sector_color"]
                         }
                    }
                 }).catch(() => res = "Erreur");
             } else res = "Requête interdite";
         });
+    }
+
+    return res;
+}
+
+async function subscribeAppointments(headers, data, appointmentID, query) {
+    var res = {};
+
+    if(headers["authorization"] && data["client_id"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+        var clientID = data["client_id"];
+        await query(`
+            SELECT U.id as user_id, A.id as appointment_id \
+            FROM user U \
+            JOIN user_client UC \
+            ON U.id=UC.user_id \
+            JOIN user_token UT \
+            ON U.id=UT.user \
+            LEFT OUTER JOIN appointment A \
+            ON A.id=${appointmentID} \
+            WHERE UC.client_id=${clientID} \
+            AND UT.token="${token}" \
+            AND A.client_id IS NULL
+        `).then(async result => {
+            if(result.length == 1) { // le client est bien lié à l'utilisateur
+                if(result[0]["appointment_id"] == appointmentID) {
+                    await query(`
+                        UPDATE appointment A SET client_id=${clientID} WHERE A.id=${appointmentID}
+                    `).then(() => {
+                        // on a ajouté le rendez-vous au client
+                        res["success"] = true;
+                    }).catch(() => res = "Erreur UPDATE");
+                } else res = "Déjà réservé";
+            } else res = "Action interdite";
+        }).catch(() => res = "Erreur SELECT");
     }
 
     return res;
