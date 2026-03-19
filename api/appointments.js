@@ -3,6 +3,8 @@ async function handle(method, splittedRoute, headers, data, queryParameters, que
     switch(method) {
         case "PUT":
             res = await handlePut(splittedRoute, headers, data, query);
+        case "DELETE":
+            res = await handleDelete(splittedRoute, headers, data, query);
     }
     return res;
 }
@@ -107,6 +109,46 @@ async function subscribeAppointments(headers, data, appointmentID, query) {
         }).catch(() => res = "Erreur SELECT");
     }
 
+    return res;
+}
+
+async function handleDelete(splittedRoute, headers, data, query) {
+    var res = { statusCode: 302, location: '/404' };
+    if(splittedRoute.length == 2 && splittedRoute[1] == "unsubscribe") {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await unsubscribeAppointments(headers, splittedRoute[0], query))
+        }
+    }
+    return res;
+}
+
+async function unsubscribeAppointments(headers, appointmentID, query) {
+    var res = {};
+    if(headers["authorization"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+        await query(`
+            SELECT A.client_id \
+            FROM appointment A \
+            JOIN client C \
+            ON A.client_id=C.id \
+            JOIN user_client UC \
+            ON C.id=UC.client_id \
+            JOIN user_token UT \
+            ON UC.user_id=UT.user \
+            WHERE A.id=${appointmentID} \
+            AND UT.token="${token}"
+        `).then(async result => {
+            if(result.length == 1) {
+                await query(`
+                    UPDATE appointment SET client_id=NULL WHERE client_id=${result[0]["client_id"]}
+                `).then(() => {
+                    res["success"] = true;
+                })
+            } else res = "Erreur 1";
+        });
+    }
     return res;
 }
 
