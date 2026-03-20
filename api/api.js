@@ -19,15 +19,17 @@ const query = util.promisify(db.query).bind(db);
 const doctors = require('./doctors');
 const users = require('./users');
 const appointments = require('./appointments');
+const clients = require('./clients');
 
 const requestHandlers = {
     "doctors": doctors.handle,
     "users": users.handle,
-    "appointments": appointments.handle
+    "appointments": appointments.handle,
+    "clients": clients.handle
 }
 
 async function handleRequest(req) {
-    res = { statusCode: 302, location: '/500'};
+    var res = { statusCode: 302, location: '/500'};
 
     data = querystring.decode(await getData(req)); // récupère les potentielles datas
     queryParameters  = querystring.decode(req.url.split("?")[1]||"");
