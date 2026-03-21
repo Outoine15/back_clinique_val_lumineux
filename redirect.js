@@ -3,10 +3,10 @@ const fs = require("fs");
 var redirections = [];
 
 if(fs.existsSync(`.redirect`)) {
-    var lines = fs.readFileSync(`.redirect`, { encoding: "utf-8", flag: "r" }).split(`\n`);
+    var lines = fs.readFileSync(`.redirect`, { encoding: "utf-8", flag: "r" }).split(/\n|\r\n/);
     var i = 1;
     lines.forEach(l => {
-        if(!l.startsWith(`#`)) { // commencer par # = commentaire
+        if(!l.startsWith(`#`) && l != "") { // commencer par # = commentaire
             if(/^\S+\s->\s\S+$/.test(l)) {
                 var splittedLine = l.split(` -> `);
                 redirections.push({                  // on ajoute la redirection
