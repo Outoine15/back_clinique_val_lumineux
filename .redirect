@@ -6,3 +6,5 @@
 /login -> /pages/conn.html
 /home -> /pages/index.html
 / -> /pages/index.html
+/register -> /pages/register.html
+/account -> /pages/index_user.html
