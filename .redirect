@@ -8,3 +8,4 @@
 / -> /pages/index.html
 /register -> /pages/register.html
 /account -> /pages/index_user.html
+/secretary -> /pages/indexusecretary.html
