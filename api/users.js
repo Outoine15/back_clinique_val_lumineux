@@ -70,7 +70,7 @@ async function connectMailPassword(data, query) {
                 "firstname": user["client_firstname"] || user["admin_firstname"] || user["secretary_firstname"] || user["admin_firstname"],
                 "role": (
                     user["admin_firstname"] ? "ADMIN" : (
-                        user["secratary_firstname"] ? "SECRETARY" : (
+                        user["secretary_firstname"] ? "SECRETARY" : (
                             user["doctor_firstname"] ? "DOCTOR" : "USER"
                     ))),
                 "token": token
@@ -79,6 +79,8 @@ async function connectMailPassword(data, query) {
             await query(`INSERT INTO user_token VALUES (${user["id"]}, '${token}', DATE_ADD(NOW(), INTERVAL 1 WEEK))`);
         };
     }
+
+    console.log(res);
 
     return res;
 }
@@ -146,7 +148,7 @@ async function connectToken(headers, query) {
                 "firstname": user["client_firstname"] || user["admin_firstname"] || user["secretary_firstname"] || user["admin_firstname"],
                 "role": (
                     user["admin_firstname"] ? "ADMIN" : (
-                        user["secratary_firstname"] ? "SECRETARY" : (
+                        user["secretary_firstname"] ? "SECRETARY" : (
                             user["doctor_firstname"] ? "DOCTOR" : "USER"
                     )))
             };
