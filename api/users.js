@@ -80,8 +80,6 @@ async function connectMailPassword(data, query) {
         };
     }
 
-    console.log(res);
-
     return res;
 }
 
