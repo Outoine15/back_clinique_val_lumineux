@@ -133,8 +133,6 @@ async function getSectors(query) {
     if(sector){
         res.push(sector);
     }
-
-    console.log(res);
     return res;
 }
 
