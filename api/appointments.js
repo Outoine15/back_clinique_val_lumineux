@@ -45,8 +45,8 @@ async function createAppointments(headers, data, query) { // création d'un rend
             LEFT OUTER JOIN doctor D \
             ON U.doctor_id = D.id \
             LEFT OUTER JOIN secretary SE \
-            ON U.secretary_id=SE.id
-            JOIN sector S \
+            ON U.secretary_id=SE.id \
+            LEFT OUTER JOIN sector S \
             ON D.sector_id = S.id \
             WHERE UT.token="${token}"
         `);
@@ -57,9 +57,9 @@ async function createAppointments(headers, data, query) { // création d'un rend
             var success = true;
 
             if(dataSet["secretary_id"]) {
-                result = query(`
+                result = await query(`
                     SELECT D.name as doctor_name, D.firstname as doctor_firstname, \
-                    S.id as sector_id, S.name as sector_name, S.description as sector_description, S.color as sector_color, \
+                    S.id as sector_id, S.name as sector_name, S.description as sector_description, S.color as sector_color \
                     FROM doctor D \
                     JOIN sector S \
                     ON D.sector_id=S.id \
