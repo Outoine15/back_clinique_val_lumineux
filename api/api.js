@@ -11,7 +11,8 @@ var db = mysql.createPool({
     database: env.DB_NAME,
     connectionLimit: 10,
     waitForConnections: true,
-    queueLimit: 0
+    queueLimit: 0,
+    dateStrings: true
 });
 
 const query = util.promisify(db.query).bind(db);
