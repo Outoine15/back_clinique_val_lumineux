@@ -21,12 +21,14 @@ const doctors = require('./doctors');
 const users = require('./users');
 const appointments = require('./appointments');
 const clients = require('./clients');
+const sectors = require('./sectors');
 
 const requestHandlers = {
     "doctors": doctors.handle,
     "users": users.handle,
     "appointments": appointments.handle,
-    "clients": clients.handle
+    "clients": clients.handle,
+    "sectors": sectors.handle
 }
 
 async function checkDBConnection() {

@@ -6,7 +6,7 @@ async function handle(method, splittedRoute, headers, data, queryParameters, que
             break;
         case "DELETE":
             break;
-    }
+    } 
     return res;
 }
 
