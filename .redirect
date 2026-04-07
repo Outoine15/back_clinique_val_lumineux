@@ -9,4 +9,4 @@
 / -> /pages/index.html
 /register -> /pages/register.html
 /account -> /pages/index_user.html
-
+/rdv -> /pages/rdv_select.html
