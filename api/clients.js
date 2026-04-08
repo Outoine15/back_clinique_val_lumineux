@@ -87,6 +87,7 @@ async function attachClient(headers, data, query) {
                 `);
                 res["success"] = true;
                 res["client"] = {
+                    "id": clientCodeId,
                     "name": userAndClient["client_name"],
                     "firstname": userAndClient["client_firstname"],
                     "birthdate": userAndClient["client_birthdate"]
