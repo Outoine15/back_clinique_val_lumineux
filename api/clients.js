@@ -68,32 +68,35 @@ async function attachClient(headers, data, query) {
         var clientCode = data["client_code"];
         var clientCodeId = clientCode.slice(2).slice(0, -2);
 
-        var userAndClientRes = await query(`
-            SELECT U.id as user_id, C.name as client_name, C.firstname as client_firstname, C.birthdate as client_birthdate \
-            FROM user U \
-            JOIN user_token UT \
-            ON U.id = UT.user \
-            LEFT OUTER JOIN client C \
-            ON C.id=${clientCodeId} \
-            WHERE UT.token="${token}"
-        `);
-
-        if(userAndClientRes.length == 1 && userAndClientRes[0]["client_name"]) { // s'il y a bien un utilisateur avec ce token et un client avec cet ID
-            var userAndClient = userAndClientRes[0];
-            var expectedCode = userAndClient["client_name"].slice(0,2) + clientCodeId + userAndClient["client_firstname"].slice(0,2);
-            if(clientCode == expectedCode) { // le code est bon
-                await query(`
-                    INSERT INTO user_client VALUES (${clientCodeId}, ${userAndClient["user_id"]})
-                `);
-                res["success"] = true;
-                res["client"] = {
-                    "id": clientCodeId,
-                    "name": userAndClient["client_name"],
-                    "firstname": userAndClient["client_firstname"],
-                    "birthdate": userAndClient["client_birthdate"]
-                }
-            } else { res["reason"] = "Code incorrect"; }
-        } else { res["reason"] = "Informations invalides"; }
+        if(parseInt(clientCodeId)) {
+            var userAndClientRes = await query(`
+                SELECT U.id as user_id, C.name as client_name, C.firstname as client_firstname, C.birthdate as client_birthdate \
+                FROM user U \
+                JOIN user_token UT \
+                ON U.id = UT.user \
+                LEFT OUTER JOIN client C \
+                ON C.id=${clientCodeId} \
+                WHERE UT.token="${token}"
+            `);
+    
+            if(userAndClientRes.length == 1 && userAndClientRes[0]["client_name"]) { // s'il y a bien un utilisateur avec ce token et un client avec cet ID
+                var userAndClient = userAndClientRes[0];
+                var expectedCode = userAndClient["client_name"].slice(0,2) + clientCodeId + userAndClient["client_firstname"].slice(0,2);
+                if(clientCode == expectedCode) { // le code est bon
+                    await query(`
+                        INSERT INTO user_client VALUES (${clientCodeId}, ${userAndClient["user_id"]})
+                    `).then(() => {
+                        res["success"] = true;
+                        res["client"] = {
+                            "id": clientCodeId,
+                            "name": userAndClient["client_name"],
+                            "firstname": userAndClient["client_firstname"],
+                            "birthdate": userAndClient["client_birthdate"]
+                        }
+                    }).catch(() => res["reason"] = "Client déjà lié à l'utilisateur");
+                } else { res["reason"] = "Code incorrect"; }
+            } else { res["reason"] = "Informations invalides"; }
+        } else { res["reason"] = "Code invalide"; }
     }
 
     return res;
