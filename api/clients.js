@@ -7,7 +7,8 @@ async function handle(method, splittedRoute, headers, data, queryParameters, que
         case "PUT":
             res = await handlePut(splittedRoute, headers, data, query);
             break;
-
+        case "POST":
+            res = await handlePost(splittedRoute, headers, data, query);
     }
     return res;
 }
@@ -99,6 +100,60 @@ async function attachClient(headers, data, query) {
         } else { res["reason"] = "Code invalide"; }
     }
 
+    return res;
+}
+
+async function handlePost(splittedRoute, headers, data, query) {
+    var res = { statusCode: 302, location: '/404' };
+    
+    if(splittedRoute.length == 0) {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await createClient(headers, data, query))
+        }
+    }
+
+    return res;
+}
+
+async function createClient(headers, data, query) {
+    var res = {"success": false};
+    if(headers["Authorization"] && data["name"] && data["firstname"] && data["birthdate"]) {
+        var token = headers["Authorization"].replace("Bearer ", "");
+        var name = data["name"];
+        var firstname = data["firstname"];
+        var birthdate = data["birthdate"];
+
+        var tokenVerification = await query(`
+            SELECT U.id \
+            FROM user U \
+            JOIN user_token UT \
+            ON U.id = UT.user \
+            WHERE UT.token="${token}"
+        `);
+
+        if(tokenVerification.length != 0) {
+            var userID = tokenVerification[0]["id"];
+
+            var clientID = (await query(`
+                INSERT INTO client \
+                VALUES (0, '${name}', '${firstname}', '${birthdate}')
+            `))["insertId"];
+
+            await query(`
+                INSERT INTO user_client \
+                VALUES (${clientID}, ${userID})
+            `);
+
+            res = {
+                "id": userID,
+                "name": name,
+                "firstname": firstname,
+                "birthdate": birthdate
+            };
+        }
+    }
     return res;
 }
 
