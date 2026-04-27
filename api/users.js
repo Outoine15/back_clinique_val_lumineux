@@ -222,20 +222,26 @@ async function handlePut(splittedRoute, headers, data, query) {
 }
 
 async function createUserDB(mail, password, firstname, name, birthdate, query) {
-    var userID = (await query(
+    var userID;
+
+    await query(
         `INSERT INTO user(mail, password) \
         VALUES (\
         '${mail}', \
         '${createHash('md5').update(password).digest("base64")}' \
         )
-    `))["insertId"];
-        
-    var clientID = (await query(`
-        INSERT INTO client(name, firstname, birthdate) \
-        VALUE ('${name}', '${firstname}', '${birthdate}')
-    `))["insertId"];
-
-    await query(`INSERT INTO user_client VALUES (${clientID}, ${userID})`);
+    `).then((res) => {
+        userID = res["insertId"];
+    }).catch(() => userID = -1);
+    
+    if(userID != -1) {
+        var clientID = (await query(`
+            INSERT INTO client(name, firstname, birthdate) \
+            VALUE ('${name}', '${firstname}', '${birthdate}')
+        `))["insertId"];
+    
+        await query(`INSERT INTO user_client VALUES (${clientID}, ${userID})`);
+    }
     
     return userID;
 }
@@ -247,8 +253,8 @@ async function createUser(headers, data, query) {
         
         if(headers["autorization"]) { // personne déjà connectée
             token = headers["autorization"].replace("Bearer ", "");
-            isAdmin = (await query(
-                `SELECT name FROM user_token UT \
+            isAdmin = (await query(`
+                SELECT name FROM user_token UT \
                 JOIN user U \
                 ON UT.user = U.id \
                 WHERE UT.token='${token}' AND U.admin_id IS NOT NULL
@@ -260,7 +266,7 @@ async function createUser(headers, data, query) {
             userID = await createUserDB(data["mail"], data["password"], data["firstname"], data["name"], data["birthdate"], query);
         }
 
-        if(userID) { // la création a fonctionné
+        if(userID != -1) { // la création a fonctionné
             res = {
                 "id": userID,
                 "mail": data["mail"],
