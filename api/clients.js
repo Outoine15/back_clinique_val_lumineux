@@ -119,8 +119,8 @@ async function handlePost(splittedRoute, headers, data, query) {
 
 async function createClient(headers, data, query) {
     var res = {"success": false};
-    if(headers["Authorization"] && data["name"] && data["firstname"] && data["birthdate"]) {
-        var token = headers["Authorization"].replace("Bearer ", "");
+    if(headers["authorization"] && data["name"] && data["firstname"] && data["birthdate"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
         var name = data["name"];
         var firstname = data["firstname"];
         var birthdate = data["birthdate"];
