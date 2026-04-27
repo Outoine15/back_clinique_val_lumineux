@@ -13,6 +13,7 @@ async function handle(method, splittedRoute, headers, data, queryParameters, que
             res = await handlePut(splittedRoute, headers, data, query);
             break;
         case "DELETE":
+            res = await handleDelete(splittedRoute, headers, query);
             break;
         default:
             res = { statusCode: 302, location: '/404' };
@@ -279,6 +280,41 @@ async function createUser(headers, data, query) {
     return res;
 }
 
+async function handleDelete(splittedRoute, headers, query) {
+    var res = { statusCode: 302, location: '/404' };
+    if(splittedRoute.length == 0) { // TODO DELETE USER
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await deleteUser(headers, query))
+        };
+    }
+    return res;
+}
+
+async function deleteUser(headers, query) {
+    var res = {"success": false};
+
+    if(headers["authorization"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+
+        var userIDRes = await query(`SELECT UT.user as id FROM user_token UT WHERE UT.token="${token}"`);
+        
+        if(userIDRes.length == 1) {
+            var userID = userIDRes[0]["id"];
+
+            await query(`DELETE FROM user_client WHERE user_id = ${userID}`); // supprime les liens entre les clients et cet utilisateur
+
+            await query(`DELETE FROM user_token WHERE user = ${userID}`); // supprime tous les tokens de l'utilisateur
+
+            await query(`DELETE FROM user WHERE id = ${userID}`); // supprime l'utilisateur
+
+            res["success"] = true;
+        }
+    }
+
+    return res;
+}
 
 module.exports = {
     handle: handle
