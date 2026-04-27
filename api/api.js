@@ -104,8 +104,8 @@ async function cleanData() {
             DELETE C \
             FROM client C \
             LEFT OUTER JOIN user_client UC \
-            ON C.id = UC.user_id \
-            WHERE UC.user_id IS NULL
+            ON C.id = UC.client_id \
+            WHERE UC.client_id IS NULL
         `); // supprime chacun des clients sans utilisateur
 
         await query(`
