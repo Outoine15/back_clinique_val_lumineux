@@ -147,7 +147,7 @@ async function createClient(headers, data, query) {
             `);
 
             res = {
-                "id": userID,
+                "id": clientID,
                 "name": name,
                 "firstname": firstname,
                 "birthdate": birthdate
