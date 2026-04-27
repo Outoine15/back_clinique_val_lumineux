@@ -88,7 +88,50 @@ async function getData(req) { // récupère les data d'une requête
 
 async function cleanData() {
     while(await checkDBConnection()) {
-        await query(`DELETE FROM user_token WHERE expiration < NOW()`);
+        await query(`DELETE FROM user_token WHERE expiration < NOW()`); // supprime tokens dépassées
+        
+        await query(`
+            UPDATE appointment A \
+            JOIN client C \
+            ON A.client_id = C.id \
+            LEFT OUTER JOIN user_client UC \
+            ON C.id = UC.client_id \
+            SET A.client_id = NULL \
+            WHERE UC.client_id IS NULL
+        `); // enlève des rendez-vous chacun des clients qui ne sont plus liés nul part
+        
+        await query(`
+            DELETE C \
+            FROM client C \
+            LEFT OUTER JOIN user_client UC \
+            ON C.id = UC.user_id \
+            WHERE UC.user_id IS NULL
+        `); // supprime chacun des clients sans utilisateur
+
+        await query(`
+            DELETE D \
+            FROM doctor D \
+            LEFT OUTER JOIN user U \
+            ON D.id = U.doctor_id \
+            WHERE U.id IS NULL
+        `); // supprime les docteurs liés à aucun utilisateur
+
+        await query(`
+            DELETE S \
+            FROM secretary S \
+            LEFT OUTER JOIN user U \
+            ON S.id = U.secretary_id \
+            WHERE U.id IS NULL
+        `); // supprime les secrétaires liés à aucun utilisateur
+
+        await query(`
+            DELETE A \
+            FROM admin A \
+            LEFT OUTER JOIN user U \
+            ON A.id = U.admin_id \
+            WHERE U.id IS NULL
+        `); // supprime les administrateurs liés à aucun utilisateur
+
         await new Promise(r => setTimeout(r, 172800000)); // 172800000 ms = 2d
     }
 }
