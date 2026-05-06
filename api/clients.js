@@ -180,7 +180,7 @@ async function deleteClient(clientID, headers, query) { // supprime LE LIEN entr
         var token = headers["authorization"].replace("Bearer ", "");
         
         await query(`
-            DELETE FROM UC \
+            DELETE UC \
             FROM user_client UC \
             JOIN user U \
             ON UC.user_id = U.id \
