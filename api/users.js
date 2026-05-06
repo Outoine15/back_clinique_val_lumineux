@@ -272,8 +272,7 @@ async function createUser(headers, data, query) {
                 "mail": data["mail"],
                 "name": data["name"],
                 "firstname": data["firstname"],
-                "admin": false,
-                "secretary": false
+                "role": "USER"
             };
 
             if(!isAdmin) {
