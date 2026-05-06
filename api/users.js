@@ -151,7 +151,7 @@ async function connectToken(headers, query) {
                             user["doctor_firstname"] ? "DOCTOR" : "USER"
                     )))
             };
-            query(`UPDATE user_token SET expiration=DATA_ADD(NOW(), INTERVAL 1 WEEK) WHERE token="${token}"`);
+            await query(`UPDATE user_token SET \`expiration\`=DATA_ADD(NOW(), INTERVAL 1 WEEK) WHERE \`token\`="${token}"`);
         }
     }
     return res;
