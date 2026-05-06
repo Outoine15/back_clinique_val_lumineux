@@ -9,6 +9,9 @@ async function handle(method, splittedRoute, headers, data, queryParameters, que
             break;
         case "POST":
             res = await handlePost(splittedRoute, headers, data, query);
+            break;
+        case "DELETE":
+            res = await handleDelete(splittedRoute, headers, data, query);
     }
     return res;
 }
@@ -153,6 +156,39 @@ async function createClient(headers, data, query) {
                 "birthdate": birthdate
             };
         }
+    }
+    return res;
+}
+
+async function handleDelete(splittedRoute, headers, data, query) { // /clients/...
+    var res = { statusCode: 302, location: '/404' };
+    
+    if(splittedRoute.length == 1) {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await deleteClient(splittedRoute[0], headers, query))
+        }
+    }
+
+    return res;
+}
+
+async function deleteClient(clientID, headers, query) { // supprime LE LIEN entre l'utilisateur et le client, pas le client lui même !
+    var res = { success: false };
+    if(headers["authorization"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+        
+        await query(`
+            DELETE FROM UC \
+            FROM user_client UC \
+            JOIN user U \
+            ON UC.user_id = U.id \
+            JOIN user_token UT \
+            ON UC.user_id = UT.user \
+            WHERE UT.token = "${token}" \
+            AND UC.client_id = ${clientID}
+        `).then(() => res["success"] = true);
     }
     return res;
 }
