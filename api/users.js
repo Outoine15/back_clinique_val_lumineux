@@ -288,7 +288,7 @@ async function createUser(headers, data, query) {
 
 async function handleDelete(splittedRoute, headers, query) {
     var res = { statusCode: 302, location: '/404' };
-    if(splittedRoute.length == 0) { // TODO DELETE USER
+    if(splittedRoute.length == 0) {
         res = {
             statusCode: 200,
             contentType: 'application/json',
