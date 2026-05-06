@@ -142,6 +142,11 @@ async function cleanData() {
             WHERE U.id IS NULL
         `); // supprime les administrateurs liés à aucun utilisateur
 
+        await query(`
+            DELETE FROM appointment \
+            WHERE time_end < NOW()
+        `); // supprime les rendez-vous passés
+
         await new Promise(r => setTimeout(r, 172800000)); // 172800000 ms = 2d
     }
 }
