@@ -95,8 +95,8 @@ async function getDoctor(doctorID, query) {
 async function getDoctors(query) {
     var res = { success: false };
 
-    var result = await query(
-        `SELECT \
+    var result = await query(`
+        SELECT \
         D.id as doctor_id, D.name, D.firstname, \
         S.id as sector_id, S.name as sector_name, S.description, S.job as job_name, S.color, \
         A.id as appointment_id, A.time_start, A.time_end, A.client_id \
@@ -105,7 +105,7 @@ async function getDoctors(query) {
         ON D.sector_id = S.id \
         LEFT OUTER JOIN appointment A \
         ON D.id = A.doctor_id \
-        WHERE A.time_end < NOW()
+        WHERE NOW() < A.time_end \
         ORDER BY D.id
     `);
     
