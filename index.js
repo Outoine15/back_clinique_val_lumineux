@@ -98,7 +98,9 @@ const server = http.createServer(async (req, res) => {
 	req.url = askedRessource;
 
 	var askedContent;
-	if(askedRessource.toLowerCase().startsWith("/api")) {
+	if(askedRessource["statusCode"]) {
+		askedContent = askedRessource;
+	}else if(askedRessource.toLowerCase().startsWith("/api")) {
 		askedContent = await api.handleRequest(req);
 	} else if(askedRessource.toLowerCase().startsWith("/github")) {
 		askedContent = await githubRequest.handleRequest(req);

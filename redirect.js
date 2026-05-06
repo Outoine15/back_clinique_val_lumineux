@@ -7,11 +7,15 @@ if(fs.existsSync(`.redirect`)) {
     var i = 1;
     lines.forEach(l => {
         if(!l.startsWith(`#`) && l != "") { // commencer par # = commentaire
-            if(/^\S+\s->\s\S+$/.test(l)) {
+            if(/^\S+\s->\s\S+( hard)?$/.test(l)) {
                 var splittedLine = l.split(` -> `);
+                var from = splittedLine[0];
+                var to = splittedLine[1].replace(" hard", "");
+                var hard = splittedLine[1].endsWith(" hard");
                 redirections.push({                  // on ajoute la redirection
-                    "from": splittedLine[0],
-                    "to": splittedLine[1]
+                    "from": from,
+                    "to": to,
+                    "hard": hard
                 });
             } else console.warn(`Redirection invalide .redirect:${i}`);
         }
@@ -64,12 +68,18 @@ function getRedirection(path) {
             }
 
             if(match && workingPath == "") {
-                redirect = redirection["to"];
+                var redirectURL = redirection["to"];
                 for(var x = 0 ; x < args.length ; x++) { // on remplace tous les arguments qu'on connaît dans la nouvelle URL
-                    redirect = redirect.replaceAll(`{${x}}`, args[x]);
+                    redirectURL = redirectURL.replaceAll(`{${x}}`, args[x]);
                 }
+
+                if(redirection["hard"]) redirect = { statusCode: 302, location: redirectURL };
+                else redirect = redirectURL;
             }
-        } else if(new RegExp(`^${from}/*$`).test(path)) redirect = redirection["to"];
+        } else if(new RegExp(`^${from}/*$`).test(path)) {
+            if(redirection["hard"]) redirect = { statusCode: 302, location: redirection["to"] }
+            else redirect = redirection["to"];
+        }
         i++;
     }
 
