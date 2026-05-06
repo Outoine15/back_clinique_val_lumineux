@@ -54,6 +54,7 @@ async function getDoctor(doctorID, query) {
         LEFT OUTER JOIN appointment A \
         ON D.id = A.doctor_id \
         WHERE D.id = ${doctorID} \
+        AND A.time_end < NOW() \
         ORDER BY A.time_start`
     );
     
@@ -103,7 +104,8 @@ async function getDoctors(query) {
         JOIN sector S \
         ON D.sector_id = S.id \
         LEFT OUTER JOIN appointment A \
-        ON D.id = A.doctor_id
+        ON D.id = A.doctor_id \
+        WHERE A.time_end < NOW()
         ORDER BY D.id
     `);
     
