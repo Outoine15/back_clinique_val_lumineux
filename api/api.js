@@ -109,6 +109,16 @@ async function cleanData() {
         `); // supprime chacun des clients sans utilisateur
 
         await query(`
+            DELETE A \
+            FROM appointment A \
+            JOIN doctor D \
+            ON A.doctor_id = D.id \
+            LEFT OUTER JOIN user U \
+            ON D.id = U.doctor_id \
+            WHERE U.id IS NULL
+        `); // supprime les rendez-vous des docteurs qui ne sont plus valides
+
+        await query(`
             DELETE D \
             FROM doctor D \
             LEFT OUTER JOIN user U \
