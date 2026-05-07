@@ -14,8 +14,9 @@ async function handleGet(splittedRoute, headers, data, query) {
     var res = { statusCode: 302, location: '/404' };
     var content;
 
-    if(splittedRoute.length == 1) { // "/api/doctors/{doctor_id}"
-        content = await getDoctor(splittedRoute[0], query);
+    if(splittedRoute.length == 1) { // "/api/doctors/{doctor_id}" ou "/api/doctors/appointments"
+        if(splittedRoute[0] == "appointments") content = await getDoctorAppointments(headers, query);
+        else content = await getDoctor(splittedRoute[0], query);
     } else if(splittedRoute.length == 0) {
         content = await getDoctors(query);
     }
@@ -26,6 +27,53 @@ async function handleGet(splittedRoute, headers, data, query) {
             contentType: 'application/json',
             content: JSON.stringify(content)
         };
+    }
+
+    return res;
+}
+
+async function getDoctorAppointments(headers, query) {
+    var res = {success: false};
+
+    if(headers["authorization"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+
+        var appointments = await query(`
+            SELECT A.id as appointment_id, A.time_start, A.time_end, \
+            C.id as client_id, C.name, C.firstname \
+            FROM appointment A \
+            LEFT OUTER JOIN client C \
+            ON A.client_id = C.id \
+            JOIN user U \
+            ON A.doctor_id = U.doctor_id \
+            JOIN user_token UT \
+            ON U.id = UT.user \
+            WHERE UT.token = "${token}"
+        `);
+
+        if(appointments.length != 0) {
+            res = [];
+            
+            for(i = 0 ; i < appointments.length ; i++) {
+                var appointment = appointments[i];
+
+                var info = {
+                    "id": appointment["appointment_id"],
+                    "start": appointment["time_start"],
+                    "end": appointment["time_end"],
+                };
+
+                if(appointment["client_id"] != null) {
+                    info["client"] = {
+                        "id": appointment["client_id"],
+                        "name": appointment["name"],
+                        "firstname": appointment["firstname"]
+                    };
+                } else info["client"] = null;
+
+                res.push(info);
+            }
+        }
     }
 
     return res;
