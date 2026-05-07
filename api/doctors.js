@@ -70,6 +70,8 @@ async function getDoctorAppointments(headers, query) {
                         "firstname": appointment["firstname"]
                     };
                 } else info["client"] = null;
+
+                res.push(info);
             }
         }
     }
