@@ -3,7 +3,6 @@ require("dotenv").config();
 const http = require('http');
 const fs = require('fs');
 
-const githubRequest = require('./githubRequest');
 const { getRedirection } = require("./redirect");
 const api = require('./api/api');
 
@@ -101,9 +100,9 @@ const server = http.createServer(async (req, res) => {
 	if(askedRessource["statusCode"]) {
 		askedContent = askedRessource;
 	}else if(askedRessource.toLowerCase().startsWith("/api")) {
-		askedContent = await api.handleRequest(req);
-	} else if(askedRessource.toLowerCase().startsWith("/github")) {
-		askedContent = await githubRequest.handleRequest(req);
+		try {
+			askedContent = await api.handleRequest(req);
+		} catch(error) {} // sera automatiquement redirigé en erreur 500
 	} else {
 		askedContent = getAssociatedResponseSite(askedRessource);
 	}
@@ -131,3 +130,7 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, HOSTNAME, () => {
 	console.log(`Serveur démarré sur http://${HOSTNAME}:${PORT}`);
 });
+
+/*process.on('uncaughtException', () => {
+	console.log("exception !");
+});*/
