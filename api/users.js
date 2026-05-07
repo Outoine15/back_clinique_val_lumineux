@@ -237,7 +237,7 @@ async function createUserDB(mail, password, firstname, name, birthdate, query) {
     if(userID != -1) {
         var clientID = (await query(`
             INSERT INTO client(name, firstname, birthdate) \
-            VALUE ('${name}', '${firstname}', '${birthdate}')
+            VALUES ('${name}', '${firstname}', '${birthdate}')
         `))["insertId"];
     
         await query(`INSERT INTO user_client VALUES (${clientID}, ${userID})`);
