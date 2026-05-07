@@ -9,6 +9,6 @@
 / -> /home hard
 /register -> /pages/register.html
 /rdv -> /pages/rdv_select.html
-/USER -> /pages/index_user.html
-/DOCTOR -> /pages/index_doctor.html
-/SECRETARY -> /pages/index_secretary.html
+/user -> /pages/index_user.html
+/doctor -> /pages/index_doctor.html
+/secretary -> /pages/index_secretary.html
