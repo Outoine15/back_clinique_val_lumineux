@@ -8,6 +8,7 @@
 /secretary -> /pages/index_secretary.html
 / -> /home hard
 /register -> /pages/register.html
-/account -> /pages/index_user.html
 /rdv -> /pages/rdv_select.html
-/doctor -> /pages/index_doctor.html
+/USER -> /pages/index_user.html
+/DOCTOR -> /pages/index_doctor.html
+/SECRETARY -> /pages/index.html
