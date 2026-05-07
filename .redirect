@@ -11,4 +11,4 @@
 /rdv -> /pages/rdv_select.html
 /USER -> /pages/index_user.html
 /DOCTOR -> /pages/index_doctor.html
-/SECRETARY -> /pages/index.html
+/SECRETARY -> /pages/index_secretary.html
