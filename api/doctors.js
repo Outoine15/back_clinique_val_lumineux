@@ -1,10 +1,13 @@
+const { createHash, randomBytes } = require('crypto');
+
 async function handle(method, splittedRoute, headers, data, queryParameters, query) {
     var res = { statusCode: 302, location: '/404' };
     switch(method) {
         case "GET":
             res = await handleGet(splittedRoute, headers, data, query);
             break;
-        case "DELETE":
+        case "PUT":
+            res = await handlePut(splittedRoute, headers, data, query);
             break;
     } 
     return res;
@@ -193,6 +196,74 @@ async function getDoctors(query) {
     }
 
     if(doctor) res.push(doctor);
+
+    return res;
+}
+
+async function handlePut(splittedRoute, headers, data, query) {
+    var res = { statusCode: 302, location: '/404' };
+    
+    if(splittedRoute.length == 0) {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await createDoctor(headers, data, query))
+        }
+    }
+    return res;
+}
+
+async function createDoctor(headers, data, query) {
+    var res = {success: false};
+
+    if(headers["authorization"] && data["mail"] && data["name"] && data["firstname"] && data["sectorID"] && data["password"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+
+        var isAdmin = (await query(`
+            SELECT U.id \
+            FROM user U \
+            JOIN user_token UT \
+            ON U.id = UT.user \
+            WHERE token = "${token}" \
+            AND U.admin_id IS NOT NULL
+        `));
+
+        if(isAdmin) {
+            var doctorID = (await query(`
+                INSERT INTO doctor(name, firstname, sector_id) \
+                VALUES ("${data["name"]}", "${data["firstname"]}", ${data["sectorID"]})
+            `))["insertId"];
+
+            var sectorInfo = (await query(`SELECT name, description, job, color FROM sector WHERE id = ${data["sectorID"]}`))[0];
+
+            var userID = (await query(`
+                INSERT INTO user(mail, password, doctor_id) \
+                VALUES ("${data["mail"]}", "${createHash('md5').update(data["password"]).digest("base64")}", ${doctorID});
+            `))["insertId"];
+
+            var token = randomBytes(64).toString("base64url");
+
+            await query(`
+                INSERT INTO user_token \
+                VALUES (${userID}, "${token}", DATE_ADD(NOW(), INTERVAL 1 WEEK)) 
+            `);
+
+            res = {
+                "id": userID,
+                "mail": data["mail"],
+                "name": data["name"],
+                "firstname": data["firstname"],
+                "sector": {
+                    "id": data["sectorID"],
+                    "name": sectorInfo["name"],
+                    "description": sectorInfo["description"],
+                    "job": sectorInfo["job"],
+                    "color": sectorInfo["color"]
+                },
+                "token": token
+            };
+        }
+    }
 
     return res;
 }
