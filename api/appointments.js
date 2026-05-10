@@ -187,6 +187,12 @@ async function handleDelete(splittedRoute, headers, data, query) {
             contentType: 'application/json',
             content: JSON.stringify(await unsubscribeAppointments(headers, splittedRoute[0], query))
         }
+    } else if(splittedRoute.length == 1) {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await deleteAppointments(headers, splittedRoute[0], query))
+        }
     }
     return res;
 }
@@ -216,6 +222,37 @@ async function unsubscribeAppointments(headers, appointmentID, query) {
                 res["success"] = true;
             })
         };
+    }
+    return res;
+}
+
+async function deleteAppointments(headers, appointmentID, query) {
+    res = { success: false };
+    if(parseInt(appointmentID) != NaN && headers["authorization"]) {
+        var token = headers["authorization"].replace("Bearer ", "");
+
+        var isAdminOrValidDoctor = (await query(`
+            SELECT U.id \
+            FROM user U \
+            JOIN user_token UT \
+            ON U.id = UT.user \
+            LEFT OUTER JOIN admin A \
+            ON U.admin_id = A.id \
+            LEFT OUTER JOIN doctor D \
+            ON U.doctor_id = D.id \
+            JOIN appointment AP \
+            ON AP.id = ${appointmentID} \
+            WHERE (
+                (U.doctor_id IS NOT NULL AND AP.doctor_id = D.id) \
+                OR U.admin_id IS NOT NULL
+            ) \
+            AND UT.token = "${token}"
+        `)).length == 1;
+
+        if(isAdminOrValidDoctor) {
+            await query(`DELETE FROM appointment WHERE id = ${appointmentID}`);
+            res["success"] = true;
+        }
     }
     return res;
 }
