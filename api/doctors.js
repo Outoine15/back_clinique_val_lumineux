@@ -9,6 +9,9 @@ async function handle(method, splittedRoute, headers, data, queryParameters, que
         case "PUT":
             res = await handlePut(splittedRoute, headers, data, query);
             break;
+        case "DELETE":
+            res = await handleDelete(splittedRoute, headers, data, query);
+            break;
     } 
     return res;
 }
@@ -262,6 +265,43 @@ async function createDoctor(headers, data, query) {
                 },
                 "token": token
             };
+        }
+    }
+
+    return res;
+}
+
+async function handleDelete(splittedRoute, headers, data, query) {
+    var res = { statusCode: 302, location: '/404' };
+    
+    if(splittedRoute.length == 1) {
+        res = {
+            statusCode: 200,
+            contentType: 'application/json',
+            content: JSON.stringify(await deleteDoctor(headers, splittedRoute[0], query))
+        };
+    }
+    return res;
+}
+
+async function deleteDoctor(headers, doctorID, query) {
+    res = { success: false };
+
+    if(headers["authorization"] && parseInt(doctorID) != NaN) {
+        var token = headers["authorization"].replace("Bearer ", "");
+
+        var isAdmin = (await query(`
+            SELECT U.admin_id \
+            FROM user U \
+            JOIN user_token UT \
+            ON U.id = UT.user \
+            WHERE U.admin_id IS NOT NULL \
+            AND UT.token = "${token}"
+        `)).length == 1;
+        
+        if(isAdmin) {
+            await query(`DELETE FROM doctor WHERE id = ${doctorID}`);
+            res["success"] = true;
         }
     }
 
