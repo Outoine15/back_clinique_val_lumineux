@@ -13,8 +13,5 @@
 /user -> /pages/index_user.html
 /doctor -> /pages/index_doctor.html
 /secretary -> /pages/index_secretary.html
-<<<<<<< HEAD
 /admin -> /pages/index_admin.html
-=======
 /gerer_rdv -> /pages/gestion_rdv.html
->>>>>>> 2df96a6a711770088f84d91313303b6b95e3a012
