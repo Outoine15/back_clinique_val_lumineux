@@ -13,6 +13,7 @@
 /user -> /pages/index_user.html
 /doctor -> /pages/index_doctor.html
 /secretary -> /pages/index_secretary.html
+<<<<<<< HEAD
 /admin -> /pages/index_admin.html
 =======
 /gerer_rdv -> /pages/gestion_rdv.html
