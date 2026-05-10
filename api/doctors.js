@@ -300,6 +300,7 @@ async function deleteDoctor(headers, doctorID, query) {
         `)).length == 1;
         
         if(isAdmin) {
+            await query(`DELETE FROM appointment WHERE doctor_id = ${doctorID}`); //il faut supp les rdv avant de pouvoir le supprimer
             await query(`DELETE FROM doctor WHERE id = ${doctorID}`);
             res["success"] = true;
         }
