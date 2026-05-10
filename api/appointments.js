@@ -245,6 +245,7 @@ async function deleteAppointments(headers, appointmentID, query) {
             WHERE (
                 (U.doctor_id IS NOT NULL AND AP.doctor_id = D.id) \
                 OR U.admin_id IS NOT NULL
+                OR U.secretary_id IS NOT NULL
             ) \
             AND UT.token = "${token}"
         `)).length == 1;
