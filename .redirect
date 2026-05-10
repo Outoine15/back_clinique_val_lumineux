@@ -13,3 +13,4 @@
 /user -> /pages/index_user.html
 /doctor -> /pages/index_doctor.html
 /secretary -> /pages/index_secretary.html
+/gerer_rdv -> /pages/gestion_rdv.html
