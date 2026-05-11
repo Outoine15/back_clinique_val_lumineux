@@ -34,11 +34,6 @@ DB_NAME=my_db
 
 Après cela, le serveur est installé.
 
-Il est possible d'utiliser les WebHooks GitHub pour importer le front et le back du site lorsqu'une release est faite. Il faut configurer les variables `FRONT_REPO` et `BACK_REPO` avec les noms des répertoire (`owner/repo`) pour les utiliser.
-L'adresse du WebHook est `http://votre.site/github`. Afin d'éviter l'usurpation lorsque vous recevez un WebHook, vous pouvez utiliser une [clé secrète sur le WebHook](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries).
-
-Pour utiliser cette clef secrète de votre côté aussi, il suffit d'ajouter les variables d'environnement `GITHUB_FRONT_SECRET` et `GITHUB_BACK_SECRET` et d'y associer votre clé. Cependant, il n'est pas obligatoire d'en mettre une.
-
 ### Lancement
 ---
 ```bash
