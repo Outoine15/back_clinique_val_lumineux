@@ -159,7 +159,7 @@ async function getDoctors(query) {
         ON D.sector_id = S.id \
         LEFT OUTER JOIN appointment A \
         ON D.id = A.doctor_id \
-        WHERE NOW() < A.time_end \
+        WHERE A.time_end IS NULL OR NOW() < A.time_end \
         ORDER BY D.id
     `);
     
