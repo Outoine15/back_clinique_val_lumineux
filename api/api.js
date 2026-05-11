@@ -69,6 +69,7 @@ async function handleRequest(req) {
             if(requestHandlers[firstRoute]) { // si le début de la route existe
                 // on délégue le traitement de la requête à bonne route
                 res = requestHandlers[firstRoute](method, splittedRoute.slice(1), req.headers, data, queryParameters, query);
+                cleanData();
             }
         }
     }
@@ -87,7 +88,7 @@ async function getData(req) { // récupère les data d'une requête
 }
 
 async function cleanData() {
-    while(await checkDBConnection()) {
+    if(await checkDBConnection()) {
         await query(`DELETE FROM user_token WHERE expiration < NOW()`); // supprime tokens dépassées
         
         await query(`
@@ -146,12 +147,17 @@ async function cleanData() {
             DELETE FROM appointment \
             WHERE time_end < NOW()
         `); // supprime les rendez-vous passés
+    }
+}
 
+async function cleanDataTimeout() {
+    while(await checkDBConnection()) {
+        await cleanData();
         await new Promise(r => setTimeout(r, 172800000)); // 172800000 ms = 2d
     }
 }
 
-cleanData();
+cleanDataTimeout();
 
 module.exports = {
     handleRequest: handleRequest
