@@ -6,7 +6,7 @@
 /login -> /pages/conn.html
 /home -> /pages/index.html
 /secretary -> /pages/index_secretary.html
-/ -> /home hard
+/ -> ./home hard
 /register -> /pages/register.html
 /rdv -> /pages/rdv_select.html
 /rdv_ano -> /pages/rdv_anonyme.html
